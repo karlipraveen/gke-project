@@ -12,17 +12,17 @@ The infrastructure follows Google Cloud best practices and includes networking, 
 
 The Terraform project creates the following resources:
 
-- Private GKE Cluster
-- Custom VPC
-- Public & Private Subnets
-- Cloud Router
-- Cloud NAT
-- Managed Node Pool
-- Service Account
-- IAM Roles
-- Firewall Rules
-- Resource Labels
-- Outputs
+- ✅Private GKE Cluster
+- ✅Custom VPC
+- ✅Public & Private Subnets
+- ✅Cloud Router
+- ✅Cloud NAT
+- ✅Managed Node Pool
+- ✅Service Account
+- ✅IAM Roles
+- ✅Firewall Rules
+- ✅Resource Labels
+- ✅Outputs
 
 ---
 
