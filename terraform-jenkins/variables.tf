@@ -1,0 +1,10 @@
+variable "project_id" {}
+variable "region" {}
+variable "zone" {}
+variable "machine_type" {}
+variable "image" {}
+variable "network" {}
+variable "subnetwork" {}
+variable "jenkins_server_name" {}
+variable "jenkins_service_account" {}
+variable "startup_script" {}
