@@ -1,4 +1,4 @@
-# Microservices with DB on Development Setup (GKE)
+<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/805fa5b5-6350-4ceb-bfe1-664c92743a5f" /># Microservices with DB on Development Setup (GKE)
 
 ## Overview
 
@@ -285,6 +285,9 @@ terraform destroy
 This document explains the end-to-end Continuous Integration and Continuous Deployment (CI/CD) pipeline implemented on **Google Cloud Platform (GCP)** for deploying microservices into **Google Kubernetes Engine (GKE)**.
 
 The pipeline follows GitOps principles using **GitHub, Jenkins, Docker, Artifact Registry, Helm, ArgoCD, and GKE**.
+
+<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/caeee524-5136-457d-943a-7eac8c5f9141" />
+
 
 ---
 
