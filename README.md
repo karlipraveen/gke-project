@@ -286,6 +286,8 @@ This document explains the end-to-end Continuous Integration and Continuous Depl
 
 The pipeline follows GitOps principles using **GitHub, Jenkins, Docker, Artifact Registry, Helm, ArgoCD, and GKE**.
 
+<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/a7aa32a7-347d-4a79-a6d5-04d4d1b5868a" />
+
 ---
 
 # Architecture Overview
