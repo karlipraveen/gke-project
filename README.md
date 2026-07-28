@@ -1,5 +1,3 @@
-<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/805fa5b5-6350-4ceb-bfe1-664c92743a5f" /># Microservices with DB on Development Setup (GKE)
-
 ## Overview
 
 This project provisions a **production-ready Google Kubernetes Engine (GKE)** infrastructure using **Terraform** for deploying microservices with a database in a development environment.
@@ -286,8 +284,7 @@ This document explains the end-to-end Continuous Integration and Continuous Depl
 
 The pipeline follows GitOps principles using **GitHub, Jenkins, Docker, Artifact Registry, Helm, ArgoCD, and GKE**.
 
-<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/caeee524-5136-457d-943a-7eac8c5f9141" />
-
+<img width="1619" height="972" alt="image" src="https://github.com/user-attachments/assets/a7aa32a7-347d-4a79-a6d5-04d4d1b5868a" />
 
 ---
 
