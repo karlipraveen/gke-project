@@ -1,21 +1,34 @@
-variable "project_id" {}
+variable "project_id" {
+  type        = string
+  description = "GCP Project ID"
+}
 
 variable "region" {
-  default = "us-central1"
+  type        = string
+  default     = "us-central1"
+  description = "GCP Region"
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  type        = string
+  default     = "us-central1-a"
+  description = "GCP Zone"
 }
 
 variable "cluster_name" {
-  default = "prod-gke"
+  type        = string
+  default     = "prod-gke"
+  description = "GKE Cluster name"
 }
 
 variable "network_name" {
-  default = "prod-vpc"
+  type        = string
+  default     = "prod-vpc"
+  description = "VPC Network name"
 }
 
 variable "machine_type" {
-  default = "e2-standard-4"
+  type        = string
+  default     = "e2-standard-4"
+  description = "Machine type for node pool"
 }

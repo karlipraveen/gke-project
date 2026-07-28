@@ -9,6 +9,16 @@ resource "google_compute_subnetwork" "private" {
   region = var.region
   ip_cidr_range = "10.10.0.0/20"
   private_ip_google_access = true
+  
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = "10.30.0.0/16"
+  }
+  
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = "10.31.0.0/16"
+  }
 }
 
 resource "google_compute_subnetwork" "public" {

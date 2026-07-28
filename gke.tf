@@ -12,7 +12,10 @@ resource "google_container_cluster" "gke" {
     channel = "REGULAR"
   }
 
-  ip_allocation_policy {}
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
 
   private_cluster_config {
     enable_private_nodes = true
