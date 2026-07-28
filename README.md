@@ -127,7 +127,6 @@ Before deploying the infrastructure, ensure the following:
 - Authenticated with Google Cloud
 
 
-````markdown
 # Installing Google Cloud CLI (gcloud) on Windows
 
 This guide explains how to install the **Google Cloud CLI (gcloud)** on a Windows desktop and configure it for managing Google Cloud resources, GKE clusters, and Terraform deployments.
@@ -690,7 +689,7 @@ After successfully installing and configuring the Google Cloud CLI:
 - Secure secrets using Secret Manager.
 - Configure Cloud SQL and Memorystore.
 - Implement CI/CD pipelines with Cloud Build and GitHub.
-````
+  
 
 ```bash
 gcloud auth login
