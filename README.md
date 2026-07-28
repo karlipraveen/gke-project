@@ -278,7 +278,6 @@ terraform destroy
 ---
 
 
-````markdown
 # End-to-End GCP CI/CD Pipeline for Microservices on GKE
 
 ## Overview
@@ -919,7 +918,7 @@ Users
 # Conclusion
 
 This CI/CD pipeline provides a secure, scalable, and automated deployment platform on Google Cloud Platform. Developers only need to push code to GitHub. The remaining stages—including build, testing, security scanning, containerization, image publishing, GitOps synchronization, deployment to GKE, monitoring, and autoscaling—are fully automated, enabling reliable and zero-downtime application delivery.
-````
+
 
 # Author
 
