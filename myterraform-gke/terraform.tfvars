@@ -1,0 +1,5 @@
+project_id   = "qwiklabs-gcp-03-cfc37ff03508"
+region       = "asia-southeast1"
+zone         = "asia-southeast1-b"
+cluster_name = "private-cluster"
+network_name = "prod-vpc"

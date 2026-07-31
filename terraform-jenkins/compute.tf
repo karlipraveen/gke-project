@@ -1,8 +1,8 @@
 resource "google_compute_instance" "jenkins" {
-  name = var.jenkins_server_name
+  name         = var.jenkins_server_name
   machine_type = var.machine_type
-  zone = var.zone
-  tags = ["jenkins"]
+  zone         = var.zone
+  tags         = ["jenkins"]
 
   boot_disk {
     initialize_params {
@@ -13,13 +13,13 @@ resource "google_compute_instance" "jenkins" {
   }
 
   network_interface {
-    network = var.network
+    network    = var.network
     subnetwork = var.subnetwork
     access_config {}
   }
 
   service_account {
-    email = google_service_account.jenkins_sa.email
+    email  = google_service_account.jenkins_sa.email
     scopes = ["cloud-platform"]
   }
 

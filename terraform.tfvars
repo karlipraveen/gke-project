@@ -1,5 +1,0 @@
-project_id   = "my-gcp-project"
-region       = "us-central1"
-zone         = "us-central1-a"
-cluster_name = "prod-gke"
-network_name = "prod-vpc"
