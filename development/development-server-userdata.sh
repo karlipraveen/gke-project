@@ -58,7 +58,6 @@ chmod +x /usr/local/bin/docker-compose
 # ------------------------------------------------------------
 # Clone Petclinic repository
 # ------------------------------------------------------------
-
 cd /home/devops
 
 if [ ! -d "microservices-with-db-on-dev-server" ]; then
@@ -72,23 +71,18 @@ fi
 # ------------------------------------------------------------
 # Change directory
 # ------------------------------------------------------------
-
 cd /home/devops/microservices-with-db-on-dev-server
 
 
 # ------------------------------------------------------------
 # Create dev branch
 # ------------------------------------------------------------
-
 git checkout -b dev || git checkout dev
-
 
 # ------------------------------------------------------------
 # Fix ownership
 # ------------------------------------------------------------
-
-chown -R devops:devops \
-  /home/devops/microservices-with-db-on-dev-server
+chown -R devops:devops /home/devops/microservices-with-db-on-dev-server
 
 
 echo "Petclinic development server setup completed."

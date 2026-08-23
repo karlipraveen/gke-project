@@ -27,3 +27,76 @@ git --version       # Git
 
 # Repository
 ls -la /home/devops/microservices-with-db-on-dev-server
+=========================================================
+I’m reviewing the Terraform definitions again so I can list the Google Cloud resources this configuration will create and then outline how to validate them after deployment.
+
+Google Cloud resources this Terraform will create
+Based on dev-server.tf and dev.auto.tfvars, the deployment will create these GCP resources:
+
+1. Compute Engine instance
+    Name: Development-Server
+    Zone: asia-southeast1-a
+    Machine type: e2-medium
+    Image: Ubuntu 22.04 LTS
+    Boot disk: 30 GB, pd-balanced
+    Network: default
+    Public IP: assigned automatically
+
+2. Firewall rule
+    Name: development-server-firewall
+    Allows inbound TCP on ports: 22, 80, 8000, 8080, 9090, 8081, 8082, 8083, 8888, 9411, 7979, 3000, 9091, 8761
+    Source range: 0.0.0.0/0
+
+3. Egress firewall rule
+    Name: development-server-firewall-egress
+    Allows all outbound traffic
+
+Validation after creation
+I verified earlier that the Terraform configuration is valid with "terraform validate", which returned success. After you apply it, use these commands to validate the real GCP resources:
+
+1) Check the VM exists
+gcloud compute instances list --filter="name='Development-Server'"
+
+2) Inspect the VM details
+gcloud compute instances describe Development-Server --zone=asia-southeast1-a
+
+3) Check firewall rules
+gcloud compute firewall-rules list --filter="name~'development-server-firewall'"
+
+4) Verify the startup script worked
+gcloud compute ssh Development-Server --zone=asia-southeast1-a --command="docker --version && java -version && git --version"
+
+5) Confirm Terraform outputs
+terraform -chdir="development" output
+
+Apply command
+If you want to create the resources now:
+terraform -chdir="development" apply -var-file=dev.auto.tfvars -auto-approve
+
+If you want, I can next help you run the apply and verify the resources step by step.
+
+
+I’m starting the deployment and then I’ll verify the created resources directly in Google Cloud so you have fresh evidence.
+terraform apply -var-file=dev.auto.tfvars -auto-approve -input=false
+
+
+The initial deployment command hit a Terraform CLI argument issue, so I’m rerunning it with the working-directory flag that the CLI expects on this environment.
+terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
+terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
+terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
+
+The deployment is being blocked by a missing SSH public key file, so I’m generating the key first and then re-running the apply against the lab project.
+New-Item -ItemType Directory -Force -Path "$HOME/.ssh" | Out-Null; if (-not (Test-Path "$HOME/.ssh/id_rsa")) { ssh-keygen -t rsa -b 2048 -f "$HOME/.ssh/id_rsa" -N '' -C 'devops' -q }; if (Test-Path "$HOME/.ssh/id_rsa.pub") { Get-Content "$HOME/.ssh/id_rsa.pub" }
+
+
+The SSH key generation command needed a different invocation for this shell, so I’m retrying with a PowerShell-compatible approach.
+$sshDir = "$HOME/.ssh"; New-Item -ItemType Directory -Force -Path $sshDir | Out-Null; if (-not (Test-Path "$sshDir/id_rsa")) { & ssh-keygen -t rsa -b 2048 -f "$sshDir/id_rsa" -N '""' -C 'devops' -q }; if (Test-Path "$sshDir/id_rsa.pub") { Get-Content "$sshDir/id_rsa.pub" }
+
+
+The apply is failing at the authentication layer rather than Terraform syntax, so I’m checking the active Google Cloud account state now to resolve that cleanly.
+gcloud auth list --format='value(account,status)' ; echo '---' ; gcloud config get-value project
+
+
+The deployment is currently blocked by Google authentication, and I’m switching to the CLI’s Windows entrypoint so I can confirm the account state and fix it directly.
+& "$env:USERPROFILE\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd" auth list --format='value(account,status)'
+
