@@ -20,7 +20,7 @@ gcloud compute instances list
 terraform output PetclinicServerExternalIP
 
 # SSH to the Development server
-gcloud compute ssh Development-Server --zone=asia-southeast1-a
+gcloud compute ssh development-server --zone=asia-southeast1-a
 docker --version    # Verify the Docker
 java -version       # Java
 git --version       # Git
@@ -71,32 +71,74 @@ terraform -chdir="development" output
 
 Apply command
 If you want to create the resources now:
-terraform -chdir="development" apply -var-file=dev.auto.tfvars -auto-approve
+# terraform -chdir="development" apply -var-file=dev.auto.tfvars -auto-approve
 
 If you want, I can next help you run the apply and verify the resources step by step.
 
 
 I’m starting the deployment and then I’ll verify the created resources directly in Google Cloud so you have fresh evidence.
-terraform apply -var-file=dev.auto.tfvars -auto-approve -input=false
+# terraform apply -var-file=dev.auto.tfvars -auto-approve -input=false
 
 
 The initial deployment command hit a Terraform CLI argument issue, so I’m rerunning it with the working-directory flag that the CLI expects on this environment.
-terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
-terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
-terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
+# terraform -chdir="c:\Users\user\OneDrive\Desktop\gke-project\development" apply -var-file="dev.auto.tfvars" -auto-approve -input=false
 
 The deployment is being blocked by a missing SSH public key file, so I’m generating the key first and then re-running the apply against the lab project.
 New-Item -ItemType Directory -Force -Path "$HOME/.ssh" | Out-Null; if (-not (Test-Path "$HOME/.ssh/id_rsa")) { ssh-keygen -t rsa -b 2048 -f "$HOME/.ssh/id_rsa" -N '' -C 'devops' -q }; if (Test-Path "$HOME/.ssh/id_rsa.pub") { Get-Content "$HOME/.ssh/id_rsa.pub" }
 
 
 The SSH key generation command needed a different invocation for this shell, so I’m retrying with a PowerShell-compatible approach.
-$sshDir = "$HOME/.ssh"; New-Item -ItemType Directory -Force -Path $sshDir | Out-Null; if (-not (Test-Path "$sshDir/id_rsa")) { & ssh-keygen -t rsa -b 2048 -f "$sshDir/id_rsa" -N '""' -C 'devops' -q }; if (Test-Path "$sshDir/id_rsa.pub") { Get-Content "$sshDir/id_rsa.pub" }
+# sshDir = "$HOME/.ssh"; New-Item -ItemType Directory -Force -Path $sshDir | Out-Null; if (-not (Test-Path "$sshDir/id_rsa")) { & ssh-keygen -t rsa -b 2048 -f "$sshDir/id_rsa" -N '""' -C 'devops' -q }; if (Test-Path "$sshDir/id_rsa.pub") { Get-Content "$sshDir/id_rsa.pub" }
 
 
 The apply is failing at the authentication layer rather than Terraform syntax, so I’m checking the active Google Cloud account state now to resolve that cleanly.
-gcloud auth list --format='value(account,status)' ; echo '---' ; gcloud config get-value project
+# gcloud auth list --format='value(account,status)' ; echo '---' ; gcloud config get-value project
 
 
 The deployment is currently blocked by Google authentication, and I’m switching to the CLI’s Windows entrypoint so I can confirm the account state and fix it directly.
 & "$env:USERPROFILE\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd" auth list --format='value(account,status)'
 
+
+
+### 1. Log in with the Qwiklabs account:
+```
+gcloud auth login student-04-9b6554964350@qwiklabs.net
+gcloud auth list    <==To verify
+```
+
+### 2. After logging in, you can check ADC with:
+If you're using Terraform or other applications that use ADC, update it:
+```
+gcloud auth application-default set-quota-project qwiklabs-gcp-04-818836f7de03
+gcloud auth application-default print-access-token
+```
+Note: If you're using Terraform, client libraries, or applications that rely on ADC, you may need to refresh those credentials too.
+
+### 3. To switch to the other account
+```
+gcloud config set account student-03-f003804322e4@qwiklabs.net
+gcloud config list      <== To verify
+```
+
+### 4. To remove an account from stored credentials
+```
+gcloud auth revoke student-03-b14b75fb8d5f@qwiklabs.net
+gcloud auth list        <== To verify
+gcloud config set account student-03-b14b75fb8d5f@qwiklabs.net
+gcloud auth list        <== your current project is qwiklabs-gcp-04-c385bcd0f66a
+gcloud config list      <== your current project is qwiklabs-gcp-04-c385bcd0f66a
+```
+
+### Check available VM instances and SSH into the VM:
+```
+gcloud compute instances list
+gcloud compute ssh VM_NAME --zone=ZONE
+```
+
+### Quick flow to remember:
+### Login → Auth List → Set Project → Config List → Instance List → SSH.
+
+### Important distinction
+* `gcloud config set account ...` → changes the **active account** for the current configuration.
+* `gcloud auth revoke ...` → removes/revokes the account's stored authentication credentials.
+* `gcloud config unset account` → removes the account setting from the current configuration, but **doesn't revoke the credentials**.
