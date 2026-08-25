@@ -134,10 +134,10 @@ The complete toolset installed by the script is:
 ```text
 OpenJDK 21, Git, Docker, Docker Compose, AWS CLI v2,
 Google Cloud CLI, GKE Authentication Plugin, Python 3,
-Ansible, Boto3, Terraform, kubectl, eksctl, and Rancher CLI
+Ansible, Boto3, Terraform, kubectl, and Rancher CLI
 ```
 
-AWS CLI, `eksctl`, and Rancher CLI are included for pipelines that manage AWS or Rancher resources; they are not required for the GCP VM itself. The GKE authentication plugin is required when `kubectl` connects to GKE clusters.
+Rancher CLI is included only for pipelines that manage Rancher-managed Kubernetes resources; it is not required for the GCP VM or for GKE itself. The GKE authentication plugin is required when `kubectl` connects to GKE clusters.
 
 The script is idempotent for package installation and can be rerun after a failed bootstrap. To run it manually on the VM:
 
