@@ -124,7 +124,6 @@ The [`jenkinsdata.sh`](jenkinsdata.sh) startup script runs automatically on the 
 - Makes `ansible` and `ansible-playbook` available through `/usr/local/bin`.
 - Installs Terraform from the official HashiCorp APT repository.
 - Installs the latest stable `kubectl` binary after verifying its SHA-256 checksum.
-- Installs `eksctl` for Amazon EKS cluster operations.
 - Installs the latest Rancher CLI release.
 - Reloads systemd and starts Jenkins.
 - Verifies all installed tools both as root and as the `jenkins` user, including Docker access.
