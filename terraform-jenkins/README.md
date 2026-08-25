@@ -102,6 +102,29 @@ The startup script installs Git, Docker, Java 21, and Jenkins LTS. It uses Unix 
 
 The first deployment creates the VM and firewall rule. The Jenkins package installation continues in the VM startup script, so wait about five minutes before opening the Jenkins URL.
 
+## Tools installed by `jenkinsdata.sh`
+
+The [`jenkinsdata.sh`](jenkinsdata.sh) startup script runs automatically on the Compute Engine VM as root. It performs the following setup:
+
+- Sets the VM hostname to `jenkins-server`.
+- Updates the Ubuntu package indexes.
+- Installs `ca-certificates`, `curl`, and `wget` for secure downloads.
+- Installs `fontconfig` and OpenJDK 21 JRE, which is required by current Jenkins LTS releases.
+- Installs Git for checking out application source code.
+- Installs Docker Engine and enables it to start automatically.
+- Adds the Jenkins LTS Debian repository and its current signing key.
+- Installs Jenkins LTS and enables the Jenkins systemd service at boot.
+- Adds the `jenkins` user to the Docker group so Jenkins pipelines can run Docker commands.
+- Reloads systemd and starts Jenkins.
+- Prints the Jenkins service status, installed versions, and the initial administrator password when available.
+
+The script is idempotent for package installation and can be rerun after a failed bootstrap. To run it manually on the VM:
+
+```powershell
+gcloud compute scp .\jenkinsdata.sh fashion-jenkins-server:/tmp/jenkinsdata.sh --zone=us-west1-b
+gcloud compute ssh fashion-jenkins-server --zone=us-west1-b --command="sudo bash /tmp/jenkinsdata.sh"
+```
+
 ## Run Jenkins for the first time
 
 After Terraform finishes, open the printed URL in a browser:
