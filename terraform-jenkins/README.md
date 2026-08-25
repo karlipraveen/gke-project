@@ -234,6 +234,31 @@ terraform state rm google_service_account.jenkins_sa google_project_iam_member.a
 
 Use `terraform state rm` only when those addresses refer to the old project. Then run `terraform plan` and confirm the plan targets the current project. A clean new-project plan should show the Jenkins VM and firewall as additions, with no old-project destroys.
 
+## Result and future CI/CD environments
+
+The Jenkins server is now installed and prepared for the Fashion-Ethichal microservices CI/CD pipelines. The server can be provisioned with Terraform and recovered or configured manually through `gcloud compute ssh` when required. The startup script installs and verifies the main build, container, infrastructure, Kubernetes, and automation tools needed by the pipeline.
+
+Jenkins can be used across Development, Testing, Staging, and Production environments. The planned GCP-based toolchain includes:
+
+- GitHub or GitLab for source control and webhook-triggered builds.
+- Maven for building the Spring microservices.
+- Docker and Docker Compose for packaging and local or integration environments.
+- Artifact Registry for storing Docker images and other build artifacts.
+- Terraform for repeatable Google Cloud infrastructure provisioning.
+- GKE, Kubernetes, and Helm for container orchestration and application releases.
+- Cloud Deploy or Jenkins pipelines for progressive delivery between environments.
+- Rancher for optional management of Rancher-managed Kubernetes clusters.
+- Ansible for server and deployment automation.
+- Cloud SQL for MySQL as the managed database equivalent of AWS RDS MySQL.
+- Cloud Storage as the managed object-storage equivalent of AWS S3.
+- Cloud DNS as the DNS equivalent of Amazon Route 53.
+- Certificate Manager for TLS certificates as the GCP equivalent of AWS Certificate Manager.
+- Cloud Monitoring and Cloud Logging, together with Prometheus and Grafana, for metrics, dashboards, and operational visibility.
+- Selenium jobs for browser-based testing and JaCoCo for Java code coverage.
+- SonarQube or another configured code-quality service for static analysis.
+
+The AWS CLI v2 and `eksctl` are also installed for compatibility with pipelines that manage AWS or Amazon EKS resources, but they are not required for the GCP deployment. The GKE authentication plugin, `gcloud`, `kubectl`, and Helm are the GCP/Kubernetes tools used for GKE deployments; install Helm separately on the Jenkins VM if a pipeline invokes it.
+
 ## Destroy the environment
 
 To remove the VM and firewall rule created by this configuration:
