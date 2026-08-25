@@ -104,19 +104,41 @@ The first deployment creates the VM and firewall rule. The Jenkins package insta
 
 ## Tools installed by `jenkinsdata.sh`
 
-The [`jenkinsdata.sh`](jenkinsdata.sh) startup script runs automatically on the Compute Engine VM as root. It performs the following setup:
+The [`jenkinsdata.sh`](jenkinsdata.sh) startup script runs automatically on the Compute Engine VM as root. It exits if it is not running with root privileges, and performs the following setup:
 
 - Sets the VM hostname to `jenkins-server`.
+- Removes older Jenkins repository and keyring files before configuring the current repository.
 - Updates the Ubuntu package indexes.
 - Installs `ca-certificates`, `curl`, and `wget` for secure downloads.
 - Installs `fontconfig` and OpenJDK 21 JRE, which is required by current Jenkins LTS releases.
 - Installs Git for checking out application source code.
 - Installs Docker Engine and enables it to start automatically.
+- Installs the Docker Compose plugin and makes the `docker compose` command available.
 - Adds the Jenkins LTS Debian repository and its current signing key.
 - Installs Jenkins LTS and enables the Jenkins systemd service at boot.
 - Adds the `jenkins` user to the Docker group so Jenkins pipelines can run Docker commands.
+- Installs AWS CLI v2 for AWS-compatible pipeline commands.
+- Installs the Google Cloud CLI (`gcloud`) for GCP resource and GKE operations.
+- Installs the GKE authentication plugin and configures `USE_GKE_GCLOUD_AUTH_PLUGIN=True` for shell sessions and Jenkins.
+- Creates a Python virtual environment at `/opt/jenkins-python` and installs Ansible and Boto3 in it.
+- Makes `ansible` and `ansible-playbook` available through `/usr/local/bin`.
+- Installs Terraform from the official HashiCorp APT repository.
+- Installs the latest stable `kubectl` binary after verifying its SHA-256 checksum.
+- Installs `eksctl` for Amazon EKS cluster operations.
+- Installs the latest Rancher CLI release.
 - Reloads systemd and starts Jenkins.
-- Prints the Jenkins service status, installed versions, and the initial administrator password when available.
+- Verifies all installed tools both as root and as the `jenkins` user, including Docker access.
+- Prints the Jenkins service status, installed versions, the Jenkins URL, and the initial administrator password when available.
+
+The complete toolset installed by the script is:
+
+```text
+OpenJDK 21, Git, Docker, Docker Compose, AWS CLI v2,
+Google Cloud CLI, GKE Authentication Plugin, Python 3,
+Ansible, Boto3, Terraform, kubectl, eksctl, and Rancher CLI
+```
+
+AWS CLI, `eksctl`, and Rancher CLI are included for pipelines that manage AWS or Rancher resources; they are not required for the GCP VM itself. The GKE authentication plugin is required when `kubectl` connects to GKE clusters.
 
 The script is idempotent for package installation and can be rerun after a failed bootstrap. To run it manually on the VM:
 
