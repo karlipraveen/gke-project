@@ -426,57 +426,8 @@ echo ""
 echo "kubectl:"
 kubectl version --client
 
-
 # ------------------------------------------------------------
-# 18. Install eksctl
-# ------------------------------------------------------------
-
-echo ""
-echo "[18/20] Installing eksctl..."
-
-cd /tmp
-
-rm -f eksctl.tar.gz
-rm -f /tmp/eksctl
-
-ARCH=$(uname -m)
-
-case "${ARCH}" in
-    x86_64)
-        EKSCTL_ARCH="amd64"
-        ;;
-    aarch64|arm64)
-        EKSCTL_ARCH="arm64"
-        ;;
-    *)
-        echo "ERROR: Unsupported architecture: ${ARCH}"
-        exit 1
-        ;;
-esac
-
-echo "System architecture: ${ARCH}"
-echo "eksctl architecture: ${EKSCTL_ARCH}"
-
-curl --silent --location \
-    "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_${EKSCTL_ARCH}.tar.gz" \
-    -o eksctl.tar.gz
-
-tar -xzf eksctl.tar.gz -C /tmp
-
-install -o root -g root -m 0755 \
-    /tmp/eksctl \
-    /usr/local/bin/eksctl
-
-rm -f /tmp/eksctl.tar.gz
-rm -f /tmp/eksctl
-
-echo ""
-echo "eksctl:"
-eksctl version
-
-
-# ------------------------------------------------------------
-# 19. Install Rancher CLI
+# 18. Install Rancher CLI
 # ------------------------------------------------------------
 
 echo ""
@@ -529,7 +480,7 @@ rancher --version
 
 
 # ------------------------------------------------------------
-# 20. Final configuration and verification
+# 19. Final configuration and verification
 # ------------------------------------------------------------
 
 echo ""
@@ -627,13 +578,6 @@ kubectl version --client
 
 echo ""
 echo "============================================================"
-echo " eksctl"
-echo "============================================================"
-eksctl version
-
-
-echo ""
-echo "============================================================"
 echo " Rancher CLI"
 echo "============================================================"
 rancher --version
@@ -691,10 +635,6 @@ ansible --version | head -n 1
 echo ""
 echo "AWS CLI:"
 aws --version
-
-echo ""
-echo "eksctl:"
-eksctl version
 
 echo ""
 echo "Rancher:"
@@ -765,7 +705,6 @@ echo "  Ansible"
 echo "  Boto3"
 echo "  Terraform"
 echo "  kubectl"
-echo "  eksctl"
 echo "  Rancher CLI"
 
 echo ""
