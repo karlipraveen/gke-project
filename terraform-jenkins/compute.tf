@@ -18,10 +18,7 @@ resource "google_compute_instance" "jenkins" {
     access_config {}
   }
 
-  service_account {
-    email  = google_service_account.jenkins_sa.email
-    scopes = ["cloud-platform"]
+  metadata = {
+    startup-script = file(var.startup_script)
   }
-
-  metadata_startup_script = file(var.startup_script)
 }

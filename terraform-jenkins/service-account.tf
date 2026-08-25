@@ -1,4 +1,7 @@
-resource "google_service_account" "jenkins_sa" {
-  account_id   = var.jenkins_service_account
-  display_name = "Jenkins Service Account"
+data "google_project" "current" {
+  project_id = var.project_id
+}
+
+locals {
+  jenkins_service_account = "${data.google_project.current.number}-compute@developer.gserviceaccount.com"
 }

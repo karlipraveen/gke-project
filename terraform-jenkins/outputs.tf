@@ -7,5 +7,5 @@ output "Jenkins_URL" {
 }
 
 output "Service_Account" {
-  value = google_service_account.jenkins_sa.email
+  value = local.jenkins_service_account
 }
