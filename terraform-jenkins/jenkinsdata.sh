@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# To run as non-interactive provisioning script
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
 # ============================================================
 # Jenkins CI/CD Server - GCP
 #
@@ -128,13 +132,56 @@ java -version
 
 
 # ------------------------------------------------------------
-# 6. Install Docker
+# 6. Install Docker Engine
 # ------------------------------------------------------------
 
 echo ""
 echo "[6/20] Installing Docker..."
 
-apt-get install -y docker.io
+# Remove Ubuntu Docker packages if present
+apt-get remove -y \
+    docker.io \
+    docker-compose \
+    docker-compose-v2 \
+    docker-doc \
+    docker-buildx \
+    podman-docker \
+    containerd \
+    runc || true
+
+# Docker official repository prerequisites
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg
+
+# Add Docker GPG key
+install -m 0755 -d /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+    -o /etc/apt/keyrings/docker.asc
+
+chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add Docker repository
+cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: ${VERSION_CODENAME}
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+apt-get update -y
+
+# Install Docker Engine + Compose + Buildx
+apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
 
 systemctl enable docker
 systemctl start docker
@@ -145,18 +192,15 @@ docker --version
 
 
 # ------------------------------------------------------------
-# 7. Install Docker Compose
+# 7. Verify Docker Compose
 # ------------------------------------------------------------
 
 echo ""
-echo "[7/20] Installing Docker Compose..."
-
-apt-get install -y docker-compose-plugin
+echo "[7/20] Installing/Verifying Docker Compose..."
 
 echo ""
 echo "Docker Compose version:"
 docker compose version
-
 
 # ------------------------------------------------------------
 # 8. Install Jenkins repository
@@ -214,61 +258,47 @@ usermod -aG docker jenkins
 systemctl restart docker
 systemctl restart jenkins
 
-
 # ------------------------------------------------------------
-# 11. Install AWS CLI v2
+# 11. Install Google Cloud CLI
 # ------------------------------------------------------------
-
 echo ""
-echo "[11/20] Installing AWS CLI v2..."
-
-cd /tmp
-
-rm -rf aws awscliv2.zip
-
-curl -fsSL \
-    "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
-    -o awscliv2.zip
-
-unzip -q awscliv2.zip
-
-if [ -x /usr/local/bin/aws ]; then
-    ./aws/install --update
-else
-    ./aws/install
-fi
-
-rm -rf aws awscliv2.zip
-
-echo ""
-echo "AWS CLI:"
-aws --version
-
-
-# ------------------------------------------------------------
-# 12. Install Google Cloud CLI
-# ------------------------------------------------------------
-
-echo ""
-echo "[12/20] Installing Google Cloud CLI..."
+echo "[11/20] Installing Google Cloud CLI..."
 
 # Remove old/duplicate Google Cloud repository configuration
 rm -f /etc/apt/sources.list.d/google-cloud-sdk.list
 rm -f /etc/apt/sources.list.d/google-cloud.list
+rm -f /usr/share/keyrings/cloud.google.gpg
+rm -f /usr/share/keyrings/cloud.google-keyring.gpg
 
-# Google Cloud repository key
+# Install prerequisites
+apt-get install -y ca-certificates curl gnupg
+
+# Create keyring directory
+install -d -m 0755 /usr/share/keyrings
+
+# Download Google Cloud repository signing key
 curl -fsSL \
     https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-    | gpg --dearmor \
-    -o /usr/share/keyrings/cloud.google.gpg
+    -o /tmp/google-cloud-key.gpg
+
+# Convert key to keyring format
+gpg \
+    --batch \
+    --yes \
+    --dearmor \
+    -o /usr/share/keyrings/cloud.google.gpg \
+    /tmp/google-cloud-key.gpg
+
+rm -f /tmp/google-cloud-key.gpg
 
 chmod 0644 /usr/share/keyrings/cloud.google.gpg
 
-# Google Cloud CLI repository
+# Configure Google Cloud repository
 cat > /etc/apt/sources.list.d/google-cloud-sdk.list <<'EOF'
 deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main
 EOF
 
+# Update package metadata
 apt-get update -y
 
 # Install Google Cloud CLI
@@ -278,13 +308,12 @@ echo ""
 echo "Google Cloud CLI:"
 gcloud version
 
-
 # ------------------------------------------------------------
-# 13. Install GKE authentication plugin
+# 12. Install GKE authentication plugin
 # ------------------------------------------------------------
 
 echo ""
-echo "[13/20] Installing GKE authentication plugin..."
+echo "[12/20] Installing GKE authentication plugin..."
 
 apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
@@ -294,11 +323,11 @@ gke-gcloud-auth-plugin --version
 
 
 # ------------------------------------------------------------
-# 14. Configure GKE authentication for kubectl
+# 13. Configure GKE authentication for kubectl
 # ------------------------------------------------------------
 
 echo ""
-echo "[14/20] Configuring GKE authentication..."
+echo "[13/20] Configuring GKE authentication..."
 
 # Enable the GKE authentication plugin for Kubernetes clients.
 #
@@ -328,11 +357,11 @@ EOF
 
 
 # ------------------------------------------------------------
-# 15. Install Python / Ansible / Boto3
+# 14. Install Python / Ansible / Boto3
 # ------------------------------------------------------------
 
 echo ""
-echo "[15/20] Installing Python, Ansible and Boto3..."
+echo "[14/20] Installing Python, Ansible and Boto3..."
 
 python3 -m venv /opt/jenkins-python
 
@@ -364,27 +393,52 @@ echo "Boto3:"
 
 
 # ------------------------------------------------------------
-# 16. Install Terraform
+# 15. Install Terraform
 # ------------------------------------------------------------
-
 echo ""
-echo "[16/20] Installing Terraform..."
+echo "[15/20] Installing Terraform..."
 
+# Install prerequisites
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg
+
+# Create keyring directory
 install -d -m 0755 /usr/share/keyrings
 
+# Remove old HashiCorp key if present
+rm -f /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Download HashiCorp signing key
 curl -fsSL \
     https://apt.releases.hashicorp.com/gpg \
-    | gpg --dearmor \
-    -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    -o /tmp/hashicorp.gpg
+
+# Convert to keyring format
+gpg \
+    --batch \
+    --yes \
+    --dearmor \
+    -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    /tmp/hashicorp.gpg
+
+rm -f /tmp/hashicorp.gpg
 
 chmod 0644 /usr/share/keyrings/hashicorp-archive-keyring.gpg
 
+# Configure HashiCorp repository
 cat > /etc/apt/sources.list.d/hashicorp.list <<EOF
-deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com ${VERSION_CODENAME} main
+deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+https://apt.releases.hashicorp.com \
+${VERSION_CODENAME} \
+main
 EOF
 
+# Update package metadata
 apt-get update -y
 
+# Install Terraform
 apt-get install -y terraform
 
 echo ""
@@ -392,12 +446,13 @@ echo "Terraform:"
 terraform version
 
 
+
 # ------------------------------------------------------------
-# 17. Install kubectl
+# 16. Install kubectl
 # ------------------------------------------------------------
 
 echo ""
-echo "[17/20] Installing kubectl..."
+echo "[16/20] Installing kubectl..."
 
 cd /tmp
 
@@ -427,40 +482,48 @@ echo "kubectl:"
 kubectl version --client
 
 # ------------------------------------------------------------
-# 18. Install Rancher CLI
+# 17. Install Rancher CLI
 # ------------------------------------------------------------
-
 echo ""
-echo "[19/20] Installing Rancher CLI..."
+echo "[17/20] Installing Rancher CLI..."
 
 cd /tmp
 
 rm -rf rancher-cli.tar.gz rancher-cli
-
 mkdir -p /tmp/rancher-cli
 
-RANCHER_CLI_VERSION=$(
+RANCHER_CLI_ASSET_URL=$(
     curl -fsSL \
-    https://api.github.com/repos/rancher/cli/releases/latest \
-    | jq -r '.tag_name'
+        https://api.github.com/repos/rancher/cli/releases/latest \
+    | jq -r '
+        .assets[]
+        | select(.name | test("^rancher-linux-amd64-.*\\.tar\\.gz$"))
+        | .browser_download_url
+    ' \
+    | head -n 1
 )
 
-if [ -z "${RANCHER_CLI_VERSION}" ] || [ "${RANCHER_CLI_VERSION}" = "null" ]; then
-    echo "ERROR: Could not determine latest Rancher CLI version."
+if [ -z "${RANCHER_CLI_ASSET_URL}" ] || [ "${RANCHER_CLI_ASSET_URL}" = "null" ]; then
+    echo "ERROR: Could not find Rancher CLI Linux AMD64 asset."
     exit 1
 fi
 
-echo "Installing Rancher CLI version: ${RANCHER_CLI_VERSION}"
+echo "Downloading Rancher CLI:"
+echo "${RANCHER_CLI_ASSET_URL}"
 
-RANCHER_VERSION_NO_V="${RANCHER_CLI_VERSION#v}"
-
-curl -fsSL \
-    "https://github.com/rancher/cli/releases/download/${RANCHER_CLI_VERSION}/rancher-linux-amd64-${RANCHER_VERSION_NO_V}.tar.gz" \
+curl -fL \
+    "${RANCHER_CLI_ASSET_URL}" \
     -o rancher-cli.tar.gz
 
-tar -xzf rancher-cli.tar.gz -C /tmp/rancher-cli
+tar -xzf rancher-cli.tar.gz \
+    -C /tmp/rancher-cli
 
-RANCHER_BINARY=$(find /tmp/rancher-cli -type f -name rancher | head -n 1)
+RANCHER_BINARY=$(
+    find /tmp/rancher-cli \
+        -type f \
+        -name rancher \
+        | head -n 1
+)
 
 if [ -z "${RANCHER_BINARY}" ]; then
     echo "ERROR: Rancher CLI binary was not found."
@@ -480,11 +543,11 @@ rancher --version
 
 
 # ------------------------------------------------------------
-# 19. Final configuration and verification
+# 18. Final configuration and verification
 # ------------------------------------------------------------
 
 echo ""
-echo "[20/20] Final configuration and verification..."
+echo "[18/20] Final configuration and verification..."
 
 systemctl daemon-reload
 
